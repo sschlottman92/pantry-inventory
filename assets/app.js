@@ -708,6 +708,7 @@ function render() {
 
   const visibleItems = getVisibleItems();
   elements.body.innerHTML = visibleItems.map(itemRow).join("");
+  renderEmptyState(visibleItems.length);
   elements.emptyState.classList.toggle("visible", visibleItems.length === 0);
   elements.locationCards.hidden = activeView !== "locations";
   elements.markVisibleChecked.hidden = activeView !== "audit";
@@ -751,15 +752,14 @@ function render() {
 }
 
 function getVisibleItems() {
-  const searchTerm = elements.search.value.trim().toLowerCase();
+  const searchTerms = getSearchTerms();
   const category = elements.categoryFilter.value;
   const location = elements.locationFilter.value;
   const sortBy = elements.sortBy.value;
 
   return items
     .filter((item) => {
-      const values = [item.name, item.category, item.location, item.notes].join(" ").toLowerCase();
-      const matchesSearch = activeView === "locations" || values.includes(searchTerm);
+      const matchesSearch = activeView === "locations" || itemMatchesSearch(item, searchTerms);
       const matchesCategory = activeView === "locations" || category === "all" || item.category === category;
       const matchesLocation =
         activeView === "locations" || location === "all" || getItemLocation(item) === location;
@@ -779,6 +779,82 @@ function getVisibleItems() {
       if (sortBy === "lastChecked") return checkedValue(first) - checkedValue(second);
       return String(first[sortBy] || "").localeCompare(String(second[sortBy] || ""));
     });
+}
+
+function getSearchTerms() {
+  return normalizeSearchText(elements.search.value)
+    .split(" ")
+    .map((term) => term.trim())
+    .filter(Boolean);
+}
+
+function itemMatchesSearch(item, searchTerms) {
+  if (!searchTerms.length) return true;
+
+  const searchableText = getSearchableItemText(item);
+  return searchTerms.every((term) => searchableText.includes(term));
+}
+
+function getSearchableItemText(item) {
+  const values = [
+    item.name,
+    item.category,
+    item.location,
+    item.notes,
+    item.unit,
+    item.quantity,
+    item.minimum,
+    item.expires,
+    item.lastChecked,
+    isLowStock(item) ? "low stock shopping restock" : "",
+    isExpiringSoon(item) ? "expiring soon expires" : "",
+    item.shoppingBought ? "bought purchased restock shopping" : "",
+    Number(item.shoppingQuantity || 0) > 0 ? "shopping list" : ""
+  ];
+
+  return normalizeSearchText(values.join(" "));
+}
+
+function normalizeSearchText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function renderEmptyState(visibleCount) {
+  if (visibleCount > 0) return;
+
+  const hasSearch = elements.search.value.trim().length > 0;
+  const hasCategoryFilter = elements.categoryFilter.value !== "all";
+  const hasLocationFilter = elements.locationFilter.value !== "all";
+
+  if (!items.length) {
+    elements.emptyState.textContent = "No items yet. Add your first pantry staple to get started.";
+    return;
+  }
+
+  if (hasSearch || hasCategoryFilter || hasLocationFilter) {
+    elements.emptyState.textContent = "No matching items. Clear search or filters to see more.";
+    return;
+  }
+
+  if (activeView === "shopping") {
+    elements.emptyState.textContent = "No shopping items right now.";
+    return;
+  }
+
+  if (activeView === "low") {
+    elements.emptyState.textContent = "No low-stock items right now.";
+    return;
+  }
+
+  if (activeView === "expiring") {
+    elements.emptyState.textContent = "No expiring items right now.";
+    return;
+  }
+
+  elements.emptyState.textContent = "No matching items.";
 }
 
 function renderCategoryFilter() {
