@@ -72,6 +72,8 @@ const elements = {
   notes: document.querySelector("#notes"),
   cancelEdit: document.querySelector("#cancelEdit"),
   search: document.querySelector("#search"),
+  toggleFilters: document.querySelector("#toggleFilters"),
+  filterPanel: document.querySelector("#filterPanel"),
   categoryFilter: document.querySelector("#categoryFilter"),
   locationFilter: document.querySelector("#locationFilter"),
   sortBy: document.querySelector("#sortBy"),
@@ -131,6 +133,7 @@ elements.locationNameInput.addEventListener("keydown", (event) => {
   }
 });
 elements.search.addEventListener("input", render);
+elements.toggleFilters.addEventListener("click", toggleFilters);
 elements.categoryFilter.addEventListener("change", render);
 elements.locationFilter.addEventListener("change", render);
 elements.sortBy.addEventListener("change", render);
@@ -161,6 +164,7 @@ elements.tabs.forEach((tab) => {
 
 renderSyncSettings();
 renderLocationListState();
+renderFilterState();
 render();
 
 if (syncSettings.enabled && syncSettings.autoLoad && syncSettings.url && syncSettings.key) {
@@ -209,10 +213,11 @@ function loadUiSettings() {
   try {
     return {
       locationsExpanded: false,
+      filtersExpanded: false,
       ...(JSON.parse(localStorage.getItem(uiSettingsKey)) || {})
     };
   } catch {
-    return { locationsExpanded: false };
+    return { locationsExpanded: false, filtersExpanded: false };
   }
 }
 
@@ -306,6 +311,22 @@ function renderSyncPanelState() {
   elements.syncDetails.hidden = !expanded;
   elements.toggleSyncPanel.textContent = expanded ? "Collapse" : "Expand";
   elements.toggleSyncPanel.setAttribute("aria-expanded", String(expanded));
+}
+
+function toggleFilters() {
+  uiSettings = {
+    ...uiSettings,
+    filtersExpanded: !uiSettings.filtersExpanded
+  };
+  saveUiSettings();
+  renderFilterState();
+}
+
+function renderFilterState() {
+  const expanded = Boolean(uiSettings.filtersExpanded);
+  elements.filterPanel.classList.toggle("filters-open", expanded);
+  elements.toggleFilters.textContent = expanded ? "Hide" : "Filters";
+  elements.toggleFilters.setAttribute("aria-expanded", String(expanded));
 }
 
 function saveItem(event) {

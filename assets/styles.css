@@ -351,6 +351,10 @@ button:hover,
   gap: 6px;
 }
 
+.filter-toggle {
+  display: none;
+}
+
 .tabs {
   display: flex;
   flex-wrap: wrap;
@@ -511,6 +515,28 @@ th {
     grid-template-columns: 1fr;
   }
 
+  .toolbar {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .search-wrap {
+    grid-template-columns: 1fr auto;
+    align-items: end;
+  }
+
+  .search-wrap label {
+    grid-column: 1 / -1;
+  }
+
+  .filter-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    min-width: 88px;
+  }
+
   .toolbar-actions,
   .form-actions,
   .location-manager-row {
@@ -521,6 +547,18 @@ th {
   .location-manager-row {
     display: grid;
     grid-template-columns: 1fr;
+  }
+
+  .toolbar-actions {
+    display: none;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #f7fafb;
+    padding: 10px;
+  }
+
+  .toolbar-actions.filters-open {
+    display: flex;
   }
 
   button {

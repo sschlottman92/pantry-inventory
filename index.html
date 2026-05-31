@@ -230,9 +230,10 @@
         <div class="toolbar">
           <div class="search-wrap">
             <label for="search">Search</label>
-            <input id="search" type="search" autocomplete="off" placeholder="Find an item, category, or location" />
+            <input id="search" type="search" autocomplete="off" placeholder="Search items, locations, notes, status" />
+            <button id="toggleFilters" class="filter-toggle" type="button" aria-expanded="false">Filters</button>
           </div>
-          <div class="toolbar-actions">
+          <div id="filterPanel" class="toolbar-actions">
             <select id="categoryFilter" aria-label="Filter by category">
               <option value="all">All categories</option>
             </select>
@@ -276,7 +277,7 @@
             </thead>
             <tbody id="inventoryBody"></tbody>
           </table>
-          <p id="emptyState" class="empty-state">No items yet. Add your first pantry staple to get started.</p>
+          <p id="emptyState" class="empty-state">No matching items.</p>
         </div>
       </section>
     </main>
