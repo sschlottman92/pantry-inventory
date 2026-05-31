@@ -344,7 +344,28 @@ function saveItem(event) {
   if (existingIndex >= 0) {
     items[existingIndex] = item;
   } else {
-    items.unshift(item);
+    const duplicateIndex = findDuplicateItemIndex(item);
+
+    if (duplicateIndex >= 0) {
+      const existingItem = items[duplicateIndex];
+      const shouldMerge = confirm(
+        `${existingItem.name} already exists in ${existingItem.location}.\n\nAdd ${formatNumber(item.quantity)} ${item.unit} to the existing quantity instead?`
+      );
+
+      if (shouldMerge) {
+        items[duplicateIndex] = {
+          ...existingItem,
+          quantity: Number((Number(existingItem.quantity) + Number(item.quantity)).toFixed(2)),
+          expires: item.expires || existingItem.expires,
+          minimum: item.minimum || existingItem.minimum,
+          notes: mergeNotes(existingItem.notes, item.notes)
+        };
+      } else {
+        items.unshift(item);
+      }
+    } else {
+      items.unshift(item);
+    }
   }
 
   saveItems();
@@ -363,6 +384,23 @@ function resetForm() {
   elements.newLocationField.hidden = true;
   elements.cancelEdit.hidden = true;
   elements.form.querySelector(".primary").textContent = "Save item";
+}
+
+function findDuplicateItemIndex(item) {
+  return items.findIndex(
+    (currentItem) =>
+      currentItem.name.trim().toLowerCase() === item.name.trim().toLowerCase() &&
+      currentItem.unit === item.unit &&
+      currentItem.category === item.category &&
+      normalizeLocation(currentItem.location).toLowerCase() === normalizeLocation(item.location).toLowerCase()
+  );
+}
+
+function mergeNotes(existingNotes, newNotes) {
+  if (!newNotes) return existingNotes || "";
+  if (!existingNotes) return newNotes;
+  if (existingNotes.includes(newNotes)) return existingNotes;
+  return `${existingNotes} | ${newNotes}`;
 }
 
 function editItem(id) {
@@ -1352,8 +1390,9 @@ async function loadFromGoogleSheets({ manual }) {
     closeRestockPanel();
     render();
     setSyncStatus(`Loaded latest ${formatDateTime(syncSettings.lastLoadAt)}`, "ok");
-  } catch {
-    setSyncStatus(manual ? "Could not load from Sheets" : "Auto-load failed", "error");
+  } catch (error) {
+    const message = error && error.message ? error.message : "unknown error";
+    setSyncStatus(`${manual ? "Load failed" : "Auto-load failed"}: ${message}`, "error");
   }
 }
 
