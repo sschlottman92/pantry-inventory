@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pantry Inventory</title>
+    <link rel="stylesheet" href="assets/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <p class="eyebrow">Home pantry</p>
+        <h1>Inventory</h1>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="controls" aria-label="Pantry controls">
+        <form id="itemForm" class="item-form">
+          <input type="hidden" id="itemId" />
+          <div class="field">
+            <label for="name">Item</label>
+            <input id="name" name="name" type="text" autocomplete="off" required placeholder="Rice, black beans, olive oil" />
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="quantity">Quantity</label>
+              <input id="quantity" name="quantity" type="number" min="0" step="0.01" required value="1" />
+            </div>
+            <div class="field">
+              <label for="unit">Unit</label>
+              <select id="unit" name="unit">
+                <option>count</option>
+                <option>oz</option>
+                <option>lb</option>
+                <option>g</option>
+                <option>kg</option>
+                <option>cup</option>
+                <option>jar</option>
+                <option>can</option>
+                <option>box</option>
+                <option>bag</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="category">Category</label>
+              <select id="category" name="category">
+                <option>Baking</option>
+                <option>Canned</option>
+                <option>Condiments</option>
+                <option>Dry goods</option>
+                <option>Freezer</option>
+                <option>Fridge</option>
+                <option>Household</option>
+                <option>Snacks</option>
+                <option>Spices</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="location">Location</label>
+              <select id="location" name="location"></select>
+            </div>
+          </div>
+          <div class="field" id="newLocationField" hidden>
+            <label for="newLocation">New location</label>
+            <input id="newLocation" name="newLocation" type="text" autocomplete="off" placeholder="Basement shelf A" />
+          </div>
+          <div>
+            <datalist id="locationOptions">
+              <option value="Kitchen pantry"></option>
+              <option value="Basement shelves"></option>
+              <option value="Deep freezer"></option>
+            </datalist>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label for="expires">Expires</label>
+              <input id="expires" name="expires" type="date" />
+            </div>
+            <div class="field">
+              <label for="minimum">Restock at</label>
+              <input id="minimum" name="minimum" type="number" min="0" step="0.01" value="1" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="notes">Notes</label>
+            <textarea id="notes" name="notes" rows="2" placeholder="Brand, recipe use, where it came from"></textarea>
+          </div>
+          <div class="form-actions">
+            <button class="primary" type="submit">Save item</button>
+            <button id="cancelEdit" type="button" hidden>Cancel</button>
+          </div>
+        </form>
+
+        <section class="summary" aria-label="Inventory summary">
+          <div>
+            <span id="totalItems">0</span>
+            <p>items tracked</p>
+          </div>
+          <div>
+            <span id="lowStockCount">0</span>
+            <p>low stock</p>
+          </div>
+          <div>
+            <span id="expiringCount">0</span>
+            <p>expiring soon</p>
+          </div>
+        </section>
+
+        <section class="manage-panel" aria-label="Manage locations">
+          <div class="sync-heading">
+            <div>
+              <h2>Manage Locations</h2>
+              <p>Add, rename, or remove storage areas</p>
+            </div>
+            <button id="toggleLocationList" type="button" aria-expanded="false">Show list</button>
+          </div>
+          <div class="form-actions">
+            <input id="locationNameInput" type="text" autocomplete="off" placeholder="New location name" />
+            <button id="addLocation" type="button">Add</button>
+          </div>
+          <div id="locationManagerList" class="location-manager-list" hidden></div>
+        </section>
+
+        <section class="sync-panel" aria-label="Google Sheets sync">
+          <div class="sync-heading">
+            <div>
+              <h2>Google Sheets Sync</h2>
+              <p id="syncStatus">Not connected</p>
+            </div>
+            <div class="sync-compact-actions">
+              <label class="switch">
+                <input id="syncEnabled" type="checkbox" />
+                <span>On</span>
+              </label>
+              <button id="toggleSyncPanel" type="button" aria-expanded="false">Expand</button>
+            </div>
+          </div>
+          <div id="syncDetails" class="sync-details" hidden>
+            <div class="field">
+              <label for="syncUrl">Apps Script web app URL</label>
+              <input id="syncUrl" type="url" placeholder="https://script.google.com/macros/s/..." />
+            </div>
+            <div class="field">
+              <label for="syncKey">Private sync key</label>
+              <input id="syncKey" type="password" autocomplete="off" placeholder="Choose a private key" />
+            </div>
+            <label class="switch">
+              <input id="syncAutoLoad" type="checkbox" />
+              <span>Load latest when app opens</span>
+            </label>
+            <div class="sync-steps">
+              <div>
+                <strong>1. Load latest</strong>
+                <span>Start here before editing on this device.</span>
+              </div>
+              <div>
+                <strong>2. Sync now</strong>
+                <span>Use after changes to update Sheets.</span>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button id="saveSyncSettings" type="button">Save sync</button>
+              <button id="loadLatest" type="button">Load latest</button>
+              <button id="syncNow" type="button">Sync now</button>
+            </div>
+          </div>
+        </section>
+
+        <section class="transfer-panel" id="transferPanel" aria-label="Transfer item" hidden>
+          <div class="sync-heading">
+            <div>
+              <h2>Transfer Stock</h2>
+              <p id="transferItemName">Choose an item from the list</p>
+            </div>
+            <button id="closeTransfer" type="button">Close</button>
+          </div>
+          <input id="transferItemId" type="hidden" />
+          <div class="form-grid">
+            <div class="field">
+              <label for="transferAmount">Quantity</label>
+              <input id="transferAmount" type="number" min="0.01" step="0.01" value="1" />
+            </div>
+            <div class="field">
+              <label for="transferDestination">To location</label>
+              <select id="transferDestination"></select>
+            </div>
+          </div>
+          <div class="field" id="transferNewLocationField" hidden>
+            <label for="transferNewLocation">New destination</label>
+            <input id="transferNewLocation" type="text" autocomplete="off" placeholder="Basement shelf A" />
+          </div>
+          <div class="field">
+            <label for="transferNote">Transfer note</label>
+            <input id="transferNote" type="text" autocomplete="off" placeholder="Optional" />
+          </div>
+          <button id="completeTransfer" class="primary" type="button">Move stock</button>
+        </section>
+
+        <section class="transfer-panel" id="restockPanel" aria-label="Restock item" hidden>
+          <div class="sync-heading">
+            <div>
+              <h2>Restock Item</h2>
+              <p id="restockItemName">Choose an item from the shopping list</p>
+            </div>
+            <button id="closeRestock" type="button">Close</button>
+          </div>
+          <input id="restockItemId" type="hidden" />
+          <div class="form-grid">
+            <div class="field">
+              <label for="restockAmount">Quantity</label>
+              <input id="restockAmount" type="number" min="0.01" step="0.01" value="1" />
+            </div>
+            <div class="field">
+              <label for="restockDestination">To location</label>
+              <select id="restockDestination"></select>
+            </div>
+          </div>
+          <div class="field" id="restockNewLocationField" hidden>
+            <label for="restockNewLocation">New destination</label>
+            <input id="restockNewLocation" type="text" autocomplete="off" placeholder="Basement shelf A" />
+          </div>
+          <button id="completeRestock" class="primary" type="button">Put away stock</button>
+        </section>
+      </section>
+
+      <section class="inventory-panel" aria-label="Inventory list">
+        <div class="toolbar">
+          <div class="search-wrap">
+            <label for="search">Search</label>
+            <input id="search" type="search" autocomplete="off" placeholder="Find an item, category, or location" />
+          </div>
+          <div class="toolbar-actions">
+            <select id="categoryFilter" aria-label="Filter by category">
+              <option value="all">All categories</option>
+            </select>
+            <select id="locationFilter" aria-label="Filter by location">
+              <option value="all">All locations</option>
+            </select>
+            <select id="sortBy" aria-label="Sort inventory">
+              <option value="name">Name</option>
+              <option value="expires">Expiration</option>
+              <option value="quantity">Quantity</option>
+              <option value="category">Category</option>
+              <option value="location">Location</option>
+              <option value="lastChecked">Last checked</option>
+            </select>
+            <button id="markVisibleChecked" type="button">Mark visible checked</button>
+          </div>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Inventory view">
+          <button class="tab active" type="button" data-view="all">All</button>
+          <button class="tab" type="button" data-view="shopping">Shopping</button>
+          <button class="tab" type="button" data-view="low">Low stock</button>
+          <button class="tab" type="button" data-view="expiring">Expiring</button>
+          <button class="tab" type="button" data-view="locations">Locations</button>
+          <button class="tab" type="button" data-view="audit">Audit</button>
+        </div>
+
+        <div id="locationCards" class="location-cards" hidden></div>
+
+        <div id="tableWrap" class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>Qty</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+          <p id="emptyState" class="empty-state">No items yet. Add your first pantry staple to get started.</p>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/app.js"></script>
+  </body>
+</html>
