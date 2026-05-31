@@ -260,6 +260,17 @@
           <button class="tab" type="button" data-view="locations">Locations</button>
           <button class="tab" type="button" data-view="audit">Audit</button>
         </div>
+        <div class="view-select-wrap">
+          <label for="viewSelect">View</label>
+          <select id="viewSelect" aria-label="Inventory view">
+            <option value="all">All</option>
+            <option value="shopping">Shopping</option>
+            <option value="low">Low stock</option>
+            <option value="expiring">Expiring</option>
+            <option value="locations">Locations</option>
+            <option value="audit">Audit</option>
+          </select>
+        </div>
 
         <div id="locationCards" class="location-cards" hidden></div>
 

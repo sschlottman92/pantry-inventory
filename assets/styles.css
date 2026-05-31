@@ -374,6 +374,10 @@ button:hover,
   font-weight: 800;
 }
 
+.view-select-wrap {
+  display: none;
+}
+
 .table-wrap {
   position: relative;
   min-height: 280px;
@@ -518,6 +522,17 @@ th {
   .toolbar {
     gap: 10px;
     padding: 12px;
+  }
+
+  .tabs {
+    display: none;
+  }
+
+  .view-select-wrap {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border-bottom: 1px solid var(--line);
   }
 
   .search-wrap {

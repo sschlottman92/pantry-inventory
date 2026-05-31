@@ -118,6 +118,7 @@ const elements = {
   markVisibleChecked: document.querySelector("#markVisibleChecked"),
   locationCards: document.querySelector("#locationCards"),
   tableWrap: document.querySelector("#tableWrap"),
+  viewSelect: document.querySelector("#viewSelect"),
   tabs: document.querySelectorAll(".tab")
 };
 
@@ -150,16 +151,10 @@ elements.closeRestock.addEventListener("click", closeRestockPanel);
 elements.completeRestock.addEventListener("click", completeRestock);
 elements.restockDestination.addEventListener("change", updateRestockNewLocationVisibility);
 elements.markVisibleChecked.addEventListener("click", markVisibleChecked);
+elements.viewSelect.addEventListener("change", () => setActiveView(elements.viewSelect.value));
 
 elements.tabs.forEach((tab) => {
-  tab.addEventListener("click", () => {
-    activeView = tab.dataset.view;
-    if (activeView === "locations") {
-      elements.locationFilter.value = "all";
-    }
-    elements.tabs.forEach((button) => button.classList.toggle("active", button === tab));
-    render();
-  });
+  tab.addEventListener("click", () => setActiveView(tab.dataset.view));
 });
 
 renderSyncSettings();
@@ -327,6 +322,16 @@ function renderFilterState() {
   elements.filterPanel.classList.toggle("filters-open", expanded);
   elements.toggleFilters.textContent = expanded ? "Hide" : "Filters";
   elements.toggleFilters.setAttribute("aria-expanded", String(expanded));
+}
+
+function setActiveView(view) {
+  activeView = view;
+  if (activeView === "locations") {
+    elements.locationFilter.value = "all";
+  }
+  elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === activeView));
+  elements.viewSelect.value = activeView;
+  render();
 }
 
 function saveItem(event) {
@@ -715,9 +720,7 @@ function addToShopping(id) {
 
   saveItems();
   queueSync();
-  activeView = "shopping";
-  elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === activeView));
-  render();
+  setActiveView("shopping");
 }
 
 function render() {
@@ -755,9 +758,7 @@ function render() {
   elements.locationCards.querySelectorAll("[data-location]").forEach((button) => {
     button.addEventListener("click", () => {
       elements.locationFilter.value = button.dataset.location;
-      activeView = "all";
-      elements.tabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.view === activeView));
-      render();
+      setActiveView("all");
     });
   });
 
